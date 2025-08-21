@@ -25,7 +25,7 @@ const Home = () => {
               <Link to="/about" className='btn btn-outline btn-lg rounded-full px-8'>
                 Learn More
               </Link>
-            </div>
+            </div>   
           </div>
           
           <div className='lg:w-1/2 flex justify-center'>

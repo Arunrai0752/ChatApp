@@ -19,7 +19,7 @@ const Navbar = () => {
 
     return (
         <>
-            <div className='navbar flex justify-between items-center bg-base-200 text-base-content px-6 py-4 shadow-md'>
+            <div className='navbar flex justify-between items-center bg-base-200 text-base-content px-6 py-4 shadow-md sticky top-0 z-100'>
                 <h1 className="text-2xl font-bold text-primary">Chat App</h1>
 
                 <div className='flex gap-4 items-center'>
