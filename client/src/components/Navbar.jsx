@@ -5,6 +5,12 @@ const Navbar = () => {
     const [theme, setTheme] = useState(
         sessionStorage.getItem("theme") || "light"
     );
+    const [activeButton, setActiveButton] = useState( sessionStorage.getItem("btn") || "Home")
+
+
+    useEffect(() => {
+        sessionStorage.setItem("btn", activeButton);
+    }, [activeButton]);
 
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", theme);
@@ -17,12 +23,15 @@ const Navbar = () => {
                 <h1 className="text-2xl font-bold text-primary">Chat App</h1>
 
                 <div className='flex gap-4 items-center'>
-                    <Link to="/" className='btn btn-ghost hover:bg-primary/20'>Home</Link>
-                    <Link to="/about" className='btn btn-ghost hover:bg-primary/20'>About</Link>
-                    <Link to="/services" className='btn btn-ghost hover:bg-primary/20'>Services</Link>
-                    <Link to="/login" className='btn btn-outline btn-primary'>Login</Link>
-                    <Link to="/signup" className='btn btn-primary'>Signup</Link> 
-                    <div className="relative group">
+                    <Link onClick={() => setActiveButton("Home")} to="/" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "Home" && 'btn-disabled'}`}  >Home</Link>
+
+
+
+                    <Link onClick={() => setActiveButton("About")} to="/about" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "About" ? 'btn-disabled' : ''}`}  >About</Link>
+                    <Link onClick={() => setActiveButton("Services")} to="/services" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "Services" ? 'btn-disabled' : ''}`}>Services</Link>
+                    <Link onClick={() => setActiveButton("Login")} to="/login"  className={`btn btn-primary btn-outline hover:bg-primary/20 ${activeButton === "Login" ? 'btn-disabled' : ''}`}>Login</Link>
+                    <Link onClick={() => setActiveButton("Singup")} to="/signup"  className={`btn btn-primary hover:bg-primary/20 ${activeButton === "Singup" ? 'btn-disabled' : ''}`}>Signup</Link>
+                    <div >
                         <select
                             name="theme"
                             id="theme"
