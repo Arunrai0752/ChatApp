@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import User from "../Models/userModel.js";
 import bcrypt from "bcrypt";
+import gentoken from "../Utils/auth.js"
 
 
 
@@ -91,6 +92,8 @@ export const userLogin = async (req, res, next) => {
             return next(error);
         }
 
+        
+        gentoken(user._id , res)
         user.password = undefined;
 
         res.status(200).json({
