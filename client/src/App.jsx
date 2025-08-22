@@ -9,6 +9,7 @@ import Services from './pages/Services';
 import Login from './pages/Login';
 import SingUp from './pages/SingUp';
 import {Toaster} from "react-hot-toast"
+import UserDashBoard from './pages/UserDashBoard';
 
 
 
@@ -28,6 +29,7 @@ const App= () => {
     <Route path='/services' element ={<Services/>}/>
     <Route path='/login' element ={<Login/>}/>
     <Route path='/signup' element ={<SingUp/>}/>
+    <Route path='/userDashBoard' element ={<UserDashBoard/>}/>
 
 
 

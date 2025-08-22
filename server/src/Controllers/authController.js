@@ -42,7 +42,7 @@ export const userRegister = async (req, res, next) => {
             agreeToTerms,
         })
 
-        return res.status(200).json({message: "User Registered Successfully"});
+        return res.status(200).json({ message: "User Registered Successfully" });
 
     } catch (error) {
 
@@ -55,22 +55,64 @@ export const userRegister = async (req, res, next) => {
 }
 
 
-export const userLogin = async (req , res, next ) => {
+export const userLogin = async (req, res, next) => {
 
 
 
-    const {email , password} = req.body;
+    const { email, password } = req.body;
 
     try {
-        
-        if(!email || !password){
 
-            return res.status(500).json({message: "All Fields Require"})
+        if (!email || !password) {
+
+            return res.status(500).json({ message: "All Fields Require" })
         }
 
+        const user = await User.findOne({ email }).select('+password');
+
+        if (!user) {
+            const error = new Error("Patient not registered");
+            error.statusCode = 404;
+            return next(error);
+        }
+
+        if (!user.password) {
+            const error = new Error("Authentication error - no password set");
+            error.statusCode = 500;
+            return next(error);
+        }
+
+
+        const isVerified = await bcrypt.compare(password, user.password);
+
+        if (!isVerified) {
+            const error = new Error("Invalid email or password");
+            error.statusCode = 401
+            return next(error);
+        }
+
+        user.password = undefined;
+
+        res.status(200).json({
+            success: true,
+            message: `Welcome back ${user.name}`,
+            data : user
+        })
+
+
+
     } catch (error) {
-        
+
+        console.error("Login error:", error);
+
+        if (error.message.includes("data and hash arguments required")) {
+            error.message = "Authentication error - invalid password comparison";
+            error.statusCode = 500;
+        }
+
+        next(error);
+
     }
-    
+
 
 }
