@@ -3,18 +3,48 @@ import { Link } from 'react-router-dom';
 import { IoChatbubbleEllipses } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
+import api from '../../Configs/api.jsx';
+import toast from 'react-hot-toast';
 
 
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [userData , setUserData] = useState({
+    email: '',
+    password: ''
+  })
+
+  const handleChange = (e) => {
+
+    const {name , value} = e.target;
+    setUserData(prev => ({...prev, [name]: value}));
+
+  }
+
+
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Logging in with:', { email, password, rememberMe });
+
+    try {
+      
+      const res = await api.post("/auth/login", userData);
+
+
+
+      
+      
+    } catch (error) {
+      if (error.response && error.response.data && error.response.data.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error(error.message || "Something went wrong, please try again.");
+      }
+    }
+
+
   };
 
   return (
@@ -34,10 +64,11 @@ const Login = () => {
                 </label>
                 <input
                   type='email'
+                   name='email'
                   placeholder='Enter your email'
                   className='input input-bordered input-primary w-full'
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={userData.email}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -49,10 +80,11 @@ const Login = () => {
                 <div className='relative'>
                   <input
                     type={showPassword ? 'text' : 'password'}
+                    name='password'
                     placeholder='Enter your password'
                     className='input input-bordered input-primary w-full pr-12'
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={userData.password}
+                    onChange={handleChange}
                     required
                   />
                   <button

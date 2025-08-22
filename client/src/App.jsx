@@ -8,6 +8,7 @@ import About from './pages/About';
 import Services from './pages/Services';
 import Login from './pages/Login';
 import SingUp from './pages/SingUp';
+import {Toaster} from "react-hot-toast"
 
 
 
@@ -19,6 +20,7 @@ const App= () => {
     <>
 
    <BrowserRouter>
+   <Toaster/>
    <Navbar/>
    <Routes>
     <Route path='/' element ={<Home/>}/>
