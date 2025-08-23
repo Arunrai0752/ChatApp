@@ -4,6 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import api from '../../Configs/api';
 import toast from 'react-hot-toast';
+import CheckOtp from '../components/CheckOtp';
 
 
 const SignUp = () => {
@@ -16,9 +17,11 @@ const SignUp = () => {
     agreeToTerms: false
   });
 
-
+  const [sendingOtp , setSendingOtp] = useState(false)
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -31,17 +34,17 @@ const SignUp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if(signUpData.password !== signUpData.confirmPassword){
+      toast.error("Password Does't Match")
+      return
+    }
+
+    setSendingOtp(true)
     try {
 
-      const res = await api.post("/auth/register", signUpData);
-      setSignUpData({
-        name: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        username: '',
-        agreeToTerms: false
-      })
+      const res = await api.post("/auth/SendOtp", signUpData);
+      setIsOtpModalOpen(true)
+
       toast.success(res.data.message)
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
@@ -214,7 +217,8 @@ const SignUp = () => {
               </div>
 
               <div className='form-control mt-8 flex justify-center  '>
-                <button type='submit' className='btn btn-primary rounded-full btn-lg w-full'>Create Account</button>
+               
+                <button type='submit' className='btn btn-primary rounded-full btn-lg w-full'> {sendingOtp? "Sendiing...." : "Send Otp" }</button>
               </div>
             </form>
 
@@ -240,6 +244,14 @@ const SignUp = () => {
               </p>
             </div>
           </div>
+
+          <CheckOtp
+            registerdata={signUpData}
+            isopen={isOtpModalOpen}
+            onclose={() => setIsOtpModalOpen(false)}
+          />
+
+          
         </div>
       </main>
     </>

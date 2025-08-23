@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserSchema =  mongoose.Schema({
+const UserSchema = mongoose.Schema({
   name: {
     type: String,
     required: [true, "Full name is required"],
@@ -29,15 +29,22 @@ const UserSchema =  mongoose.Schema({
     required: [true, "Password is required"],
     minlength: 6
   },
-  agreeToTerms: {
+    twoStepVerify: {
     type: Boolean,
     required: true,
+    enum: [true, false],
     default: false
   },
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user"
+  },
+  type: {
+    type: String,
+    enum: ["normalUser", "gmailUser"],
+    default: "gmailUser"
+
   }
 }, { timestamps: true });
 

@@ -5,11 +5,15 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import api from '../../Configs/api.jsx';
 import toast from 'react-hot-toast';
+import LoginOtp from '../components/LoginOtp.jsx';
 
 
 const Login = () => {
   const navigate = useNavigate();
 
+
+  const [sendingOtp, setSendingOtp] = useState(false)
+  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [userData, setUserData] = useState({
@@ -26,9 +30,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post("/auth/login", userData);
-      toast.success(res.data.message)
-      navigate("/userDashBoard")
+      const res = await api.post("/auth/SendOtpforlogin", userData);
+      setIsOtpModalOpen(true)
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         toast.error(error.response.data.message);
@@ -128,7 +131,7 @@ const Login = () => {
 
                 GitHub
               </button>
-            </div>       
+            </div>
 
             <div className='text-center'>
               <p className='text-base-content/70'>
@@ -147,6 +150,11 @@ const Login = () => {
               <p className='text-lg'>Join millions of users chatting securely in real-time</p>
             </div>
           </div>
+          <LoginOtp
+            loginData={userData}
+            isopen={isOtpModalOpen}
+            onclose={() => setIsOtpModalOpen(false)}
+          />
         </div>
       </main>
     </>
