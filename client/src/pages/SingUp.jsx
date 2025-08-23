@@ -46,12 +46,27 @@ const SignUp = () => {
       setIsOtpModalOpen(true)
 
       toast.success(res.data.message)
+
+    setSendingOtp(false)
+
+     
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         toast.error(error.response.data.message);
       } else {
         toast.error(error.message || "Something went wrong, please try again.");
       }
+
+
+       setSignUpData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        username: '',
+        agreeToTerms: false
+
+      })
     }
 
 

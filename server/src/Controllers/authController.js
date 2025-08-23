@@ -7,17 +7,14 @@ import sendEmail from "../Utils/sendEmail.js";
 
 
 const genDummyImage = (fullName) => {
-    // Generate soft pastel random colors (200–255 range)
     const r = Math.floor(Math.random() * 56) + 200;
     const g = Math.floor(Math.random() * 56) + 200;
     const b = Math.floor(Math.random() * 56) + 200;
 
-    // Ensure proper HEX formatting (pad with zeros if needed)
     const randomColor = `#${[r, g, b]
         .map((x) => x.toString(16).padStart(2, "0"))
         .join("")}`;
 
-    // Extract initials (max 2 letters)
     const initials = fullName
         .trim()
         .split(" ")
@@ -41,38 +38,43 @@ export const userRegister = async (req, res, next) => {
 
     try {
 
+        
+        
+        
         const fetchOtp = await OTP.findOne({ email });
         console.log(fetchOtp);
         console.log(otp);
 
 
+
+
+
         if (fetchOtp) {
             const isOtpValid = await bcrypt.compare(otp, fetchOtp.otp)
-
             if (!isOtpValid) {
                 const error = new Error("Invalid OTP");
                 error.statusCode = 409;
                 return next(error)
-            }
-
-            console.log("HI 98753");
+            }        
             await OTP.deleteOne({ email })
-
         }
         else {
-
             const error = new Error("OTP EXpired !!! Try Again. ")
             error.statusCode = 400;
             return next(error);
-
         }
-
-
+        
+        
+        
+        
         const hashedPassword = await bcrypt.hash(password, 10);
         const photo = genDummyImage(name);
 
+        
+        
+        
+        
         const newUser = await User.create({
-
             name,
             email,
             username,
@@ -83,6 +85,9 @@ export const userRegister = async (req, res, next) => {
 
         });
 
+        
+        
+        
         res.status(201).json({
             message: "User registered Successfully",
             data: newUser
@@ -90,12 +95,10 @@ export const userRegister = async (req, res, next) => {
 
 
 
-
     } catch (error) {
 
         console.error("Register Error:", error.message);
         return res.status(500).json({ success: false, message: "Server error, please try again" });
-
         next(error)
     }
 
@@ -104,33 +107,46 @@ export const userRegister = async (req, res, next) => {
 
 
 export const sendOtpForRegister = async (req, res, next) => {
+    
+    
+    
+    
     try {
+        
+        
+        
+        
         const { name, email, password } = req.body;
-
         if (!name || !email || !password) {
             const error = new Error("All fields are required");
             error.statusCode = 400;
             return next(error);
         }
-
-
+     
+     
+     
+     
         const otp = Math.floor(100000 + Math.random() * 900000);
         const hashOTP = await bcrypt.hash(otp.toString(), 10);
-
-
+     
+     
+     
+     
         try {
             const oldOtp = await OTP.findOneAndDelete({ email });
             console.log(oldOtp);
         } catch (error) {
             console.log("No previous OTP found, proceeding to create a new one.");
         }
-
+     
+     
+     
+     
         await OTP.create({
             email,
             otp: hashOTP,
             purpose: 'emailVerification'
         });
-
         const subject = "Verify Your ChatApp Registration";
         const message = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
@@ -155,6 +171,9 @@ export const sendOtpForRegister = async (req, res, next) => {
             </div>
         `;
 
+     
+     
+     
         try {
             await sendEmail(email, subject, message);
         } catch (emailError) {
@@ -164,11 +183,15 @@ export const sendOtpForRegister = async (req, res, next) => {
             return next(error);
         }
 
+
+
+
+
         res.status(200).json({
             message: "OTP sent successfully",
         });
-
     } catch (error) {
+     
         next(error);
     }
 };
@@ -177,11 +200,8 @@ export const sendOtpForRegister = async (req, res, next) => {
 export const userLogin = async (req, res, next) => {
 
     const { email, password, otp } = req.body;
-
     try {
-
         const fetchOtp = await OTP.findOne({ email });
-
         console.log(otp);
         console.log(fetchOtp);
 
@@ -195,18 +215,14 @@ export const userLogin = async (req, res, next) => {
                 return next(error)
             }
 
+
             console.log("HI 98753");
             await OTP.deleteOne({ email })
-
         } else {
-
             const error = new Error("OTP EXpired !!! Try Again. ")
             error.statusCode = 400;
             return next(error);
-
         }
-
-
 
 
 
@@ -215,23 +231,23 @@ export const userLogin = async (req, res, next) => {
             return res.status(500).json({ message: "All Fields Require" })
         }
 
-        const user = await User.findOne({ email }).select('+password');
 
+
+        const user = await User.findOne({ email }).select('+password');
         if (!user) {
             const error = new Error("Patient not registered");
             error.statusCode = 404;
             return next(error);
         }
-
         if (!user.password) {
             const error = new Error("Authentication error - no password set");
             error.statusCode = 500;
             return next(error);
         }
+        
 
 
         const isVerified = await bcrypt.compare(password, user.password);
-
         if (!isVerified) {
             const error = new Error("Invalid email or password");
             error.statusCode = 401
@@ -241,29 +257,20 @@ export const userLogin = async (req, res, next) => {
 
         gentoken(user._id, res)
         user.password = undefined;
-
         res.status(200).json({
             success: true,
             message: `Welcome back ${user.name}`,
             data: user
         })
 
-
-
     } catch (error) {
-
         console.error("Login error:", error);
-
         if (error.message.includes("data and hash arguments required")) {
             error.message = "Authentication error - invalid password comparison";
             error.statusCode = 500;
         }
-
         next(error);
-
     }
-
-
 }
 
 
@@ -272,16 +279,13 @@ export const sendOtpForlogin = async (req, res, next) => {
 
     try {
         const { email, password } = req.body;
-
         if (!email || !password) {
             const error = new Error("All fields are required");
             error.statusCode = 400;
             return next(error);
         }
 
-
         const user = await User.findOne({ email });
-
         if (!user) {
             const error = new Error("User not Registred");
             error.statusCode = 404;
@@ -291,7 +295,6 @@ export const sendOtpForlogin = async (req, res, next) => {
 
 
         const verifyUser = await bcrypt.compare(password, user.password)
-
         if (!verifyUser) {
             const error = new Error("Password Does Not match");
             error.statusCode = 404;

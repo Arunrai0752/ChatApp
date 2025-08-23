@@ -24,12 +24,16 @@ const UserSchema = mongoose.Schema({
     minlength: 3,
     maxlength: 20
   },
+  photo: {
+    type: String,
+    default: ""
+  },
   password: {
     type: String,
     required: [true, "Password is required"],
     minlength: 6
   },
-    twoStepVerify: {
+  twoStepVerify: {
     type: Boolean,
     required: true,
     enum: [true, false],
