@@ -6,16 +6,17 @@ import { FaGithub } from "react-icons/fa";
 import api from '../../Configs/api.jsx';
 import toast from 'react-hot-toast';
 import LoginOtp from '../components/LoginOtp.jsx';
+import { useAuth } from '../Context/authContext.jsx';
 
 
 const Login = () => {
   const navigate = useNavigate();
-
-
   const [sendingOtp, setSendingOtp] = useState(false)
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // const { setUser, setIsLogin } = useAuth();
+
   const [userData, setUserData] = useState({
     email: '',
     password: ''
@@ -31,7 +32,19 @@ const Login = () => {
     e.preventDefault();
     try {
       const res = await api.post("/auth/SendOtpforlogin", userData);
-      setIsOtpModalOpen(true)
+
+      if (res.data.message === "OTP sent successfully") {
+        setIsOtpModalOpen(true)
+      } else {
+
+        toast.success(res.data.message);
+        setUser(res.data.data);
+        setIsLogin(true);
+        sessionStorage.setItem("ChatUser", JSON.stringify(res.data.data));
+        // navigate("/dashboard");
+
+      }
+
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         toast.error(error.response.data.message);
@@ -40,7 +53,7 @@ const Login = () => {
       }
     }
 
-    
+
 
   };
 

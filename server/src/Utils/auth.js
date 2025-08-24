@@ -13,5 +13,4 @@ const gentoken = (userId , res) =>  {
     })
     
 }
-
 export default gentoken;

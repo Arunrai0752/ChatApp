@@ -46,8 +46,13 @@ const UserSchema = mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["normalUser", "gmailUser"],
-    default: "gmailUser"
+    enum: ["normalUser", "googleUser"],
+    default: "normalUser"
+  },
+  googleId: {
+
+    type: String,
+    default: ""
 
   }
 }, { timestamps: true });

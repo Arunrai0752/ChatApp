@@ -4,15 +4,13 @@ import api from '../../Configs/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-
-
 const LoginOtp = ({ loginData, isopen, onclose }) => {
 
     const navigate = useNavigate()
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
-    const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+    const [timeLeft, setTimeLeft] = useState(600); 
     const [success, setSuccess] = useState(false);
     const [isResending, setIsResending] = useState(false);
     const inputRefs = useRef([]);

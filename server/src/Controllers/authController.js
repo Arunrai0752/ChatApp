@@ -38,9 +38,9 @@ export const userRegister = async (req, res, next) => {
 
     try {
 
-        
-        
-        
+
+
+
         const fetchOtp = await OTP.findOne({ email });
         console.log(fetchOtp);
         console.log(otp);
@@ -55,7 +55,7 @@ export const userRegister = async (req, res, next) => {
                 const error = new Error("Invalid OTP");
                 error.statusCode = 409;
                 return next(error)
-            }        
+            }
             await OTP.deleteOne({ email })
         }
         else {
@@ -63,17 +63,17 @@ export const userRegister = async (req, res, next) => {
             error.statusCode = 400;
             return next(error);
         }
-        
-        
-        
-        
+
+
+
+
         const hashedPassword = await bcrypt.hash(password, 10);
         const photo = genDummyImage(name);
 
-        
-        
-        
-        
+
+
+
+
         const newUser = await User.create({
             name,
             email,
@@ -85,9 +85,6 @@ export const userRegister = async (req, res, next) => {
 
         });
 
-        
-        
-        
         res.status(201).json({
             message: "User registered Successfully",
             data: newUser
@@ -107,41 +104,41 @@ export const userRegister = async (req, res, next) => {
 
 
 export const sendOtpForRegister = async (req, res, next) => {
-    
-    
-    
-    
+
+
+
+
     try {
-        
-        
-        
-        
+
+
+
+
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
             const error = new Error("All fields are required");
             error.statusCode = 400;
             return next(error);
         }
-     
-     
-     
-     
+
+
+
+
         const otp = Math.floor(100000 + Math.random() * 900000);
         const hashOTP = await bcrypt.hash(otp.toString(), 10);
-     
-     
-     
-     
+
+
+
+
         try {
             const oldOtp = await OTP.findOneAndDelete({ email });
             console.log(oldOtp);
         } catch (error) {
             console.log("No previous OTP found, proceeding to create a new one.");
         }
-     
-     
-     
-     
+
+
+
+
         await OTP.create({
             email,
             otp: hashOTP,
@@ -171,9 +168,9 @@ export const sendOtpForRegister = async (req, res, next) => {
             </div>
         `;
 
-     
-     
-     
+
+
+
         try {
             await sendEmail(email, subject, message);
         } catch (emailError) {
@@ -191,7 +188,7 @@ export const sendOtpForRegister = async (req, res, next) => {
             message: "OTP sent successfully",
         });
     } catch (error) {
-     
+
         next(error);
     }
 };
@@ -199,68 +196,60 @@ export const sendOtpForRegister = async (req, res, next) => {
 
 export const userLogin = async (req, res, next) => {
 
-    const { email, password, otp } = req.body;
     try {
-        const fetchOtp = await OTP.findOne({ email });
-        console.log(otp);
-        console.log(fetchOtp);
+        const { email, password, otp } = req.body;
 
-
-        if (fetchOtp) {
-            const isOtpValid = await bcrypt.compare(otp, fetchOtp.otp)
-
-            if (!isOtpValid) {
-                const error = new Error("Invalid OTP");
-                error.statusCode = 409;
-                return next(error)
-            }
-
-
-            console.log("HI 98753");
-            await OTP.deleteOne({ email })
-        } else {
-            const error = new Error("OTP EXpired !!! Try Again. ")
+        if (!email || !password || !otp) {
+            const error = new Error("Please fill all the fields");
             error.statusCode = 400;
             return next(error);
         }
 
 
-
-        if (!email || !password) {
-
-            return res.status(500).json({ message: "All Fields Require" })
-        }
-
-
-
-        const user = await User.findOne({ email }).select('+password');
-        if (!user) {
-            const error = new Error("Patient not registered");
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            const error = new Error("User not found");
             error.statusCode = 404;
             return next(error);
         }
-        if (!user.password) {
-            const error = new Error("Authentication error - no password set");
-            error.statusCode = 500;
-            return next(error);
-        }
-        
 
 
-        const isVerified = await bcrypt.compare(password, user.password);
+
+        const isVerified = await bcrypt.compare(password, existingUser.password);
         if (!isVerified) {
-            const error = new Error("Invalid email or password");
-            error.statusCode = 401
+            const error = new Error("Invalid credentials");
+            error.statusCode = 401;
             return next(error);
         }
 
 
-        gentoken(user._id, res)
-        user.password = undefined;
+
+        if (otp !== "N/A" && existingUser.twoStepVerify === "true") {
+
+            const fetchOtp = await OTP.findOne({ email });
+
+            if (fetchOtp) {
+                const isOtpValid = await bcrypt.compare(otp, fetchOtp.otp)
+
+                if (!isOtpValid) {
+                    const error = new Error("Invalid OTP");
+                    error.statusCode = 401;
+                    return next(error)
+                }
+                     await OTP.deleteOne({ email })
+            } else {
+                const error = new Error("OTP EXpired !!! Try Again. ")
+                error.statusCode = 400;
+                return next(error);
+            }
+
+        }
+    
+        gentoken(existingUser._id, res)
         res.status(200).json({
             success: true,
-            message: `Welcome back ${user.name}`,
-            data: user
+            message: `Welcome back ${existingUser.name}`,
+            data: existingUser
         })
 
     } catch (error) {
@@ -365,3 +354,65 @@ export const sendOtpForlogin = async (req, res, next) => {
         next(error);
     }
 }
+
+
+
+
+
+export const GoogleLogin = async (req, res, next) => {
+  try {
+    const fullName = req.body.name;
+    const email = req.body.email;
+    const Gid = req.body.id;
+
+
+    if (!fullName || !email || !Gid) {
+      const error = new Error("All fields Required");
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      const hashedId = await bcrypt.hash(Gid, 10);
+      const photo = genDummyImage(fullName)
+
+      const newUser = await User.create({
+        fullName,
+        email,
+        googleId: hashedId,
+        type: "googleUser",
+        photo,
+      });
+      gentoken(newUser._id, res);
+      res.status(200).json({ message: "Login Sucessfully", data: newUser });
+    } else if (existingUser && existingUser.type === "normalUser") {
+      const hashedId = await bcrypt.hash(Gid, 10);
+
+      existingUser.googleId = hashedId;
+      existingUser.type = "googleUser";
+
+      await existingUser.save();
+      gentoken(existingUser, res);
+
+      res
+        .status(200)
+        .json({ message: "Login Sucessfully", data: existingUser });
+    } else {
+      const isVerified = await bcrypt.compare(Gid, existingUser.googleId);
+      if (!isVerified) {
+        const error = new Error("Invalid credentials");
+        error.statusCode = 401;
+        return next(error);
+      }
+
+      gentoken(existingUser, res);
+
+      res
+        .status(200)
+        .json({ message: "Login Sucessfully", data: existingUser });
+    }
+  } catch (error) {
+    next(error);
+  }
+};

@@ -39,6 +39,7 @@ const SignUp = () => {
       return
     }
 
+    
     setSendingOtp(true)
     try {
 
