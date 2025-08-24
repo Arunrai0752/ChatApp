@@ -223,8 +223,7 @@ export const userLogin = async (req, res, next) => {
         }
 
 
-
-        if (otp !== "N/A" && existingUser.twoStepVerify === "true") {
+        if (otp !== "N/A" && existingUser.twoStepVerify === true) {
 
             const fetchOtp = await OTP.findOne({ email });
 
@@ -236,7 +235,7 @@ export const userLogin = async (req, res, next) => {
                     error.statusCode = 401;
                     return next(error)
                 }
-                     await OTP.deleteOne({ email })
+                await OTP.deleteOne({ email })
             } else {
                 const error = new Error("OTP EXpired !!! Try Again. ")
                 error.statusCode = 400;
@@ -244,7 +243,7 @@ export const userLogin = async (req, res, next) => {
             }
 
         }
-    
+
         gentoken(existingUser._id, res)
         res.status(200).json({
             success: true,
@@ -292,6 +291,14 @@ export const sendOtpForlogin = async (req, res, next) => {
         }
 
 
+        console.log(user.twoStepVerify);
+        
+        if (user.twoStepVerify === false) {
+            req.body.otp = "N/A";
+            console.log("Starting Login");
+            return userLogin(req, res, next);
+
+        }
 
 
         const otp = Math.floor(100000 + Math.random() * 900000);
@@ -360,59 +367,59 @@ export const sendOtpForlogin = async (req, res, next) => {
 
 
 export const GoogleLogin = async (req, res, next) => {
-  try {
-    const fullName = req.body.name;
-    const email = req.body.email;
-    const Gid = req.body.id;
+    try {
+        const fullName = req.body.name;
+        const email = req.body.email;
+        const Gid = req.body.id;
 
 
-    if (!fullName || !email || !Gid) {
-      const error = new Error("All fields Required");
-      error.statusCode = 400;
-      return next(error);
+        if (!fullName || !email || !Gid) {
+            const error = new Error("All fields Required");
+            error.statusCode = 400;
+            return next(error);
+        }
+
+        const existingUser = await User.findOne({ email });
+        if (!existingUser) {
+            const hashedId = await bcrypt.hash(Gid, 10);
+            const photo = genDummyImage(fullName)
+
+            const newUser = await User.create({
+                fullName,
+                email,
+                googleId: hashedId,
+                type: "googleUser",
+                photo,
+            });
+            gentoken(newUser._id, res);
+            res.status(200).json({ message: "Login Sucessfully", data: newUser });
+        } else if (existingUser && existingUser.type === "normalUser") {
+            const hashedId = await bcrypt.hash(Gid, 10);
+
+            existingUser.googleId = hashedId;
+            existingUser.type = "googleUser";
+
+            await existingUser.save();
+            gentoken(existingUser, res);
+
+            res
+                .status(200)
+                .json({ message: "Login Sucessfully", data: existingUser });
+        } else {
+            const isVerified = await bcrypt.compare(Gid, existingUser.googleId);
+            if (!isVerified) {
+                const error = new Error("Invalid credentials");
+                error.statusCode = 401;
+                return next(error);
+            }
+
+            gentoken(existingUser, res);
+
+            res
+                .status(200)
+                .json({ message: "Login Sucessfully", data: existingUser });
+        }
+    } catch (error) {
+        next(error);
     }
-
-    const existingUser = await User.findOne({ email });
-    if (!existingUser) {
-      const hashedId = await bcrypt.hash(Gid, 10);
-      const photo = genDummyImage(fullName)
-
-      const newUser = await User.create({
-        fullName,
-        email,
-        googleId: hashedId,
-        type: "googleUser",
-        photo,
-      });
-      gentoken(newUser._id, res);
-      res.status(200).json({ message: "Login Sucessfully", data: newUser });
-    } else if (existingUser && existingUser.type === "normalUser") {
-      const hashedId = await bcrypt.hash(Gid, 10);
-
-      existingUser.googleId = hashedId;
-      existingUser.type = "googleUser";
-
-      await existingUser.save();
-      gentoken(existingUser, res);
-
-      res
-        .status(200)
-        .json({ message: "Login Sucessfully", data: existingUser });
-    } else {
-      const isVerified = await bcrypt.compare(Gid, existingUser.googleId);
-      if (!isVerified) {
-        const error = new Error("Invalid credentials");
-        error.statusCode = 401;
-        return next(error);
-      }
-
-      gentoken(existingUser, res);
-
-      res
-        .status(200)
-        .json({ message: "Login Sucessfully", data: existingUser });
-    }
-  } catch (error) {
-    next(error);
-  }
 };
