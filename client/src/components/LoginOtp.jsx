@@ -3,6 +3,7 @@ import { X, Clock, Mail, CheckCircle, AlertCircle, Contact } from 'lucide-react'
 import api from '../../Configs/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../Context/authContext';
 
 const LoginOtp = ({ loginData, isopen, onclose }) => {
 
@@ -10,10 +11,12 @@ const LoginOtp = ({ loginData, isopen, onclose }) => {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
-    const [timeLeft, setTimeLeft] = useState(600); 
+    const [timeLeft, setTimeLeft] = useState(600);
     const [success, setSuccess] = useState(false);
     const [isResending, setIsResending] = useState(false);
     const inputRefs = useRef([]);
+      const { setUser, setIsLogin } = useAuth();
+    
 
     useEffect(() => {
         if (isopen) {
@@ -59,19 +62,15 @@ const LoginOtp = ({ loginData, isopen, onclose }) => {
     const handleKeyDown = (index, e) => {
         if (e.key === 'Backspace') {
             if (!otp[index] && index > 0) {
-                // Move to previous input if current is empty
                 inputRefs.current[index - 1].focus();
             } else if (otp[index]) {
-                // Clear current input if it has a value
                 const newOtp = [...otp];
                 newOtp[index] = '';
                 setOtp(newOtp);
             }
         } else if (e.key === 'ArrowLeft' && index > 0) {
-            // Navigate left with arrow key
             inputRefs.current[index - 1].focus();
         } else if (e.key === 'ArrowRight' && index < 5) {
-            // Navigate right with arrow key
             inputRefs.current[index + 1].focus();
         }
     };
@@ -115,6 +114,10 @@ const LoginOtp = ({ loginData, isopen, onclose }) => {
 
             const res = await api.post("/auth/login", Data);
             toast.success(res.data.message)
+            setUser(res.data.data);
+            setIsLogin(true);
+            sessionStorage.setItem("ChatUser", JSON.stringify(res.data.data));
+            navigate("/dashboard");
             navigate("/userDashBoard")
             setSuccess(true);
             setTimeout(() => {

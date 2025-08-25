@@ -15,7 +15,7 @@ const Login = () => {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // const { setUser, setIsLogin } = useAuth();
+  const { setUser, setIsLogin } = useAuth();
 
   const [userData, setUserData] = useState({
     email: '',
@@ -41,7 +41,7 @@ const Login = () => {
         setUser(res.data.data);
         setIsLogin(true);
         sessionStorage.setItem("ChatUser", JSON.stringify(res.data.data));
-        // navigate("/dashboard");
+        navigate("/dashboard");
 
       }
 

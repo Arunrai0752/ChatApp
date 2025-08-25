@@ -1,11 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../Context/authContext.jsx';
+
+
 
 const Navbar = () => {
     const [theme, setTheme] = useState(
         sessionStorage.getItem("theme") || "light"
     );
-    const [activeButton, setActiveButton] = useState( sessionStorage.getItem("btn") || "Home")
+    const [activeButton, setActiveButton] = useState(sessionStorage.getItem("btn") || "Home")
+    const { user, isLogin } = useAuth();
+
+
+
+    const location = useLocation().pathname.slice(1);
+    
+    useEffect(() => {
+        if (location === "chat") {
+            window.scrollTo({ top: 68, behavior: "smooth" });
+        }
+    }, [location]);
 
 
     useEffect(() => {
@@ -19,18 +33,23 @@ const Navbar = () => {
 
     return (
         <>
-            <div className='navbar flex justify-between items-center bg-base-200 text-base-content px-6 py-4 shadow-md sticky top-0 z-100'>
+            <div className='navbar flex justify-between items-center bg-base-200 text-base-content px-6 py-4 shadow-md z-100'>
                 <h1 className="text-2xl font-bold text-primary">Chat App</h1>
 
                 <div className='flex gap-4 items-center'>
                     <Link onClick={() => setActiveButton("Home")} to="/" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "Home" && 'btn-disabled'}`}  >Home</Link>
-
-
-
                     <Link onClick={() => setActiveButton("About")} to="/about" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "About" ? 'btn-disabled' : ''}`}  >About</Link>
                     <Link onClick={() => setActiveButton("Services")} to="/services" className={`btn btn-ghost hover:bg-primary/20 ${activeButton === "Services" ? 'btn-disabled' : ''}`}>Services</Link>
-                    <Link onClick={() => setActiveButton("Login")} to="/login"  className={`btn btn-primary btn-outline hover:bg-primary/20 ${activeButton === "Login" ? 'btn-disabled' : ''}`}>Login</Link>
-                    <Link onClick={() => setActiveButton("Singup")} to="/signup"  className={`btn btn-primary hover:bg-primary/20 ${activeButton === "Singup" ? 'btn-disabled' : ''}`}>Signup</Link>
+                    {isLogin ?
+                        <Link onClick={() => setActiveButton("Chat")} to="/chat" className={`btn btn-primary hover:bg-primary/20 ${activeButton === "Chat" ? 'btn-disabled' : ''}`}>Chat</Link> :
+                        <Link onClick={() => setActiveButton("Login")} to="/login" className={`btn btn-primary btn-outline hover:bg-primary/20 ${activeButton === "Login" ? 'btn-disabled' : ''}`}>Login</Link>
+                    }
+
+
+                   {user &&  <div className='flex gap-2  text-success-contain items-center' >
+                        <img src={user?.photo} alt="" className='h-8 w-8' />
+                        <h1>Welcome' Back  {user?.name} </h1>
+                    </div>}
                     <div >
                         <select
                             name="theme"
